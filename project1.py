@@ -1,7 +1,12 @@
 from bs4 import BeautifulSoup
 import requests
+import sys
 
-input_url = "https://www.icc-cricket.com/tournaments/mens-t20-world-cup-2026/matches"
+if len(sys.argv) < 2:
+    print("<URL>")
+    sys.exit()
+
+input_url = sys.argv[1]
 
 response = requests.get(input_url)
 print(response.status_code)
@@ -9,16 +14,15 @@ print(response.status_code)
 bs = BeautifulSoup(response.content,'html.parser')
 
 if bs.title:
-    print("TITLE: " + bs.title.get_text().strip() + "\n")
+    print(bs.title.get_text().strip())
 else:
     print("No title found\n")
 
 if bs.body:
-    print("BODY: " + bs.body.get_text().strip() + "\n")
+    print(bs.body.get_text().strip())
 else:    
     print("No body found\n")
 
-print("URLs:\n")
 if bs.find_all('a'):
     for t in bs.find_all('a'):
         href = t.get("href")
