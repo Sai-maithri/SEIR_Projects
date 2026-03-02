@@ -1,32 +1,46 @@
 from bs4 import BeautifulSoup
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import time
 import sys
 
-if len(sys.argv) < 2:
-    print("<URL>")
-    sys.exit()
+def parse_url(input_url):
 
-input_url = sys.argv[1]
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--log-level=3")
+    driver = webdriver.Chrome(options=options)
+    driver.get(input_url)
+    time.sleep(2)
+    html = driver.page_source
+    driver.quit()
 
-response = requests.get(input_url)
-print(response.status_code)
+    bs = BeautifulSoup(html, 'html.parser')
+    if bs.title:
+        print(bs.title.get_text().strip())
+    else:
+        print("No title found")
 
-bs = BeautifulSoup(response.content,'html.parser')
+    if bs.body:
+        print(bs.body.get_text().strip() )
+    else:
+        print("No body found")
 
-if bs.title:
-    print(bs.title.get_text().strip())
-else:
-    print("No title found\n")
+    if bs.find_all('a'):
+        for t in bs.find_all('a'):
+            href = t.get("href")
+            if href:
+                print(href)
+    else:
+        print("No URLs found")              
 
-if bs.body:
-    print(bs.body.get_text().strip())
-else:    
-    print("No body found\n")
+def main():
+    if len(sys.argv) < 2:
+        print("URL:")
+        sys.exit()
+    else:
+        input_url = sys.argv[1]
+        parse_url(input_url)
 
-if bs.find_all('a'):
-    for t in bs.find_all('a'):
-        href = t.get("href")
-        if href:
-            print(href)
-else:
-    print("No URLs found\n")
+if __name__ == "__main__":
+    main()
